@@ -156,4 +156,23 @@ export class Atracao {
             return insertResult;
         }
     }
+    static async removerAtracao(idatracao: number): Promise<boolean> {
+        let queryResult = false; 
+    
+        try {
+            const queryDeleteAtracao = `DELETE FROM atracao WHERE idatracao = ${idatracao}`;
+            
+            await database.query(queryDeleteAtracao)
+                .then((result) => {
+                    if (result.rowCount !== 0) { 
+                        queryResult = true; 
+                    }
+                });
+    
+            return queryResult; 
+        } catch (error) {
+            console.log(`Erro na consulta: ${error}`);
+            return queryResult;
+        }
+    }
 }

@@ -118,6 +118,42 @@ server.post('/novo/atracao', async (req, res) => {
         return res.status(400).json('Não foi possível cadastrar a atração no banco de dados');
     }
 });
+    server.delete('/remover/animal', async (req, res) => {
+        const idAnimal = parseInt(req.query.idAnimal as string);
+
+        const resultado = await Ave.removerAve(idAnimal);
+        
+        if(resultado) {
+            return res.status(200).json('Animal removido com sucesso');
+        } else {
+            return res.status(401).json('Erro ao remover animal');
+        }
+});
+
+server.delete('/remover/atracao', async (req, res) => {
+    const idatracao = parseInt(req.query.idatracao as string);
+
+    const resultado = await Atracao.removerAtracao(idatracao);
+    
+    if(resultado) {
+        return res.status(200).json('Atração removida com sucesso');
+    } else {
+        return res.status(401).json('Erro ao remover atração');
+    }
+});
+
+server.delete('/remover/habitat', async (req, res) =>{
+
+    const idHabitat = parseInt(req.query.idHabitat as string);
+
+    const resultado = await Habitat.removerHabitat(idHabitat);
+
+    if(resultado) {
+        return res.status(200).json('Habitat foi removido com sucesso');
+    }else{
+        return res.status(401).json('Erro ao remover habitat');
+    }
+});
 
 new DatabaseModel().testeConexao().then((resbd) => {
     if(resbd) {
