@@ -155,6 +155,70 @@ server.delete('/remover/habitat', async (req, res) =>{
     }
 });
 
+server.put('/atualizar/animal', async (req, res) => {
+
+    const { nome, idade, genero, envergadura, idHabitat } = req.body;
+
+    const idAnimal = parseInt(req.query.idAnimal as string);
+
+    const novaAve = new Ave(nome, idade, genero, envergadura);
+
+    const result = await Ave.atualizarAve(novaAve, idAnimal);
+
+    if (result) {
+        return res.status(200).json('Ave atualizada com sucesso');
+    } else {
+        return res.status(400).json('Não foi possível atualizar o ave no banco de dados');
+    }
+});
+
+server.put('/atualizar/atracao/:idAtracao', async (req, res) => {
+    const idAtracao = parseInt(req.params.idAtracao);
+    const { nomeAtracao, idHabitat } = req.body;
+
+    // Criar nova instância de Atracao
+    const novaAtracao = new Atracao(nomeAtracao);
+
+    try {
+        // Se idHabitat estiver presente na requisição, configurar o habitat da nova atração
+        if (idHabitat) {
+            const habitat = new Habitat(''); // Aqui você precisa criar uma instância de Habitat com os dados corretos
+            novaAtracao.setHabitatAtracao(habitat);
+        }
+
+        // Chamar método de atualização da atração
+        const result = await Atracao.atualizarAtracao(novaAtracao, idAtracao);
+
+        // Verificar resultado da atualização
+        if (result) {
+            return res.status(200).json('Atração atualizada com sucesso');
+        } else {
+            return res.status(400).json('Não foi possível atualizar a atração no banco de dados');
+        }
+    } catch (error) {
+        console.log('Erro ao atualizar atração:', error);
+        return res.status(400).json('Erro interno ao atualizar atração');
+    }
+});
+server.put('/atualizar/habitat', async (req, res) => {
+    // Desestruturando objeto recebido pelo front-end
+    const { nomeHabitat } = req.body;
+    const idHabitat = parseInt(req.query.idHabitat as string);
+
+    // Instanciando objeto Habitat
+    const novoHabitat = new Habitat(nomeHabitat);
+
+    // Chama o método para persistir o habitat no banco de dados
+    const result = await Habitat.atualizarHabitat(novoHabitat, idHabitat);
+
+    // Verifica se a query foi executada com sucesso
+    if (result) {
+        return res.status(200).json('Habitat atualizado com sucesso');
+    } else {
+        return res.status(400).json('Não foi possível atualizar o habitat no banco de dados');
+    }
+});
+
 new DatabaseModel().testeConexao().then((resbd) => {
     if(resbd) {
         server.listen(port, () => {
