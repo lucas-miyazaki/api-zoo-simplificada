@@ -4,7 +4,12 @@ import { Ave } from './model/Ave';
 import { Habitat } from './model/Habitat';
 import { Atracao } from './model/Atracao';
 import { DatabaseModel } from './model/DatabaseModel';
-
+import AveController from './controller/AveController';
+import AtracaoController from './controller/AtracaoController';
+import HabitatController from './controller/HabitatController';
+const aveController = new AveController('', 0, '', 0);
+const atracaoController = new AtracaoController('');
+const habitatController = new HabitatController('');
 const server = express();
 const port = 3000;
 
@@ -21,203 +26,20 @@ server.post('/login', (req, res) => {
     console.log(`Informações: ${username} - ${password}`);
 });
 
-/**
- * Listar informações cadastradas no banco de dados
- */
-// Listar todos as aves cadastradas
-server.get('/listar-aves', async (req, res) => {
-    // cria objeto aves e atribui a ele o retorno do método listarAves
-    const aves = await Ave.listarAves();
+server.get('/atracoes', atracaoController.todos);
+server.post('/novo/atracao', atracaoController.novo);
+server.delete('/remover/atracao', atracaoController.remover);
+server.put('/atualizar/atracao/:idAtracao', atracaoController.atualizar);
 
-    // retorna a lista de aves em formato json
-    res.status(200).json(aves);
-});
+server.get('/listar-aves', aveController.todos);
+server.post('/novo/ave',  aveController.novo);
+server.delete('/remover/animal', aveController.remover);
+server.put('/atualizar/animal', aveController.atualizar);
 
-// Listar todos os habitats cadastradas
-server.get('/habitats', async (req, res) => {
-    // cria objeto habitats e atribui a ele o retorno do método listarHabitats
-    const habitats = await Habitat.listarHabitats();
-
-    // retorna a lista de habitats em formato json
-    res.status(200).json(habitats);
-});
-
-// Listar todas as atrações cadastradas
-server.get('/atracoes', async (req, res) => {
-    // cria objeto atracoes e atribui a ele o retorno do método listarAtracoes
-    const atracoes = await Atracao.listarAtracoes();
-
-    // retorna a lista de atracoes em formato json
-    res.status(200).json(atracoes);
-});
-
-/**
- * Cadastrar informações no sistema
- */
-// Cadastra informações de uma nova ave
-server.post('/novo/ave', async (req, res) => {
-    // Desestruturando objeto recebido pelo front-end
-    const { nome, idade, genero, envergadura, idHabitat } = req.body;
-
-    // Instanciando objeto Ave
-    const novaAve = new Ave(nome, idade, genero, envergadura);
-
-    // Chama o método para persistir a ave no banco de dados
-    const result = await Ave.cadastrarAve(novaAve, idHabitat);
-
-    // Verifica se a query foi executada com sucesso
-    if (result) {
-        return res.status(200).json('Ave cadastrado com sucesso');
-    } else {
-        return res.status(400).json('Não foi possível cadastrar o ave no banco de dados');
-    }
-});
-
-// Cadastra informações de um novo habitat
-server.post('/novo/habitat', async (req, res) => {
-    // Desestruturando objeto recebido pelo front-end
-    const { nomeHabitat } = req.body;
-
-    // Instanciando objeto Habitat
-    const novoHabitat = new Habitat(nomeHabitat);
-
-    // Chama o método para persistir o habitat no banco de dados
-    const result = await Habitat.cadastrarHabitat(novoHabitat);
-
-    // Verifica se a query foi executada com sucesso
-    if (result) {
-        return res.status(200).json('Habitat cadastrado com sucesso');
-    } else {
-        return res.status(400).json('Não foi possível cadastrar o habitat no banco de dados');
-    }
-});
-
-// Cadastra informações de uma nova atracao
-server.post('/novo/atracao', async (req, res) => {
-    // Desestruturando objeto recebido pelo front-end
-    const { nomeAtracao, idHabitat } = req.body;
-
-    // Instanciando objeto Ave
-    const novaAtracao = new Atracao(nomeAtracao);
-
-    let result = false;
-
-    // verifica se o idHabitat não veio vazio do front-end
-    if (idHabitat != undefined) {
-        // Chama o método para persistir a atracao no banco de dados associando ao id
-        result = await Atracao.cadastrarAtracao(novaAtracao, idHabitat);
-    } else {
-        // Chama o método para persistir a atracao no banco de dados
-        result = await Atracao.cadastrarAtracao(novaAtracao);
-    }
-
-    // verifica se a query foi executada com sucesso
-    if (result) {
-        return res.status(200).json('Atração cadastrado com sucesso');
-    } else {
-        return res.status(400).json('Não foi possível cadastrar a atração no banco de dados');
-    }
-});
-    server.delete('/remover/animal', async (req, res) => {
-        const idAnimal = parseInt(req.query.idAnimal as string);
-
-        const resultado = await Ave.removerAve(idAnimal);
-        
-        if(resultado) {
-            return res.status(200).json('Animal removido com sucesso');
-        } else {
-            return res.status(401).json('Erro ao remover animal');
-        }
-});
-
-server.delete('/remover/atracao', async (req, res) => {
-    const idatracao = parseInt(req.query.idatracao as string);
-
-    const resultado = await Atracao.removerAtracao(idatracao);
-    
-    if(resultado) {
-        return res.status(200).json('Atração removida com sucesso');
-    } else {
-        return res.status(401).json('Erro ao remover atração');
-    }
-});
-
-server.delete('/remover/habitat', async (req, res) =>{
-
-    const idHabitat = parseInt(req.query.idHabitat as string);
-
-    const resultado = await Habitat.removerHabitat(idHabitat);
-
-    if(resultado) {
-        return res.status(200).json('Habitat foi removido com sucesso');
-    }else{
-        return res.status(401).json('Erro ao remover habitat');
-    }
-});
-
-server.put('/atualizar/animal', async (req, res) => {
-
-    const { nome, idade, genero, envergadura, idHabitat } = req.body;
-
-    const idAnimal = parseInt(req.query.idAnimal as string);
-
-    const novaAve = new Ave(nome, idade, genero, envergadura);
-
-    const result = await Ave.atualizarAve(novaAve, idAnimal);
-
-    if (result) {
-        return res.status(200).json('Ave atualizada com sucesso');
-    } else {
-        return res.status(400).json('Não foi possível atualizar o ave no banco de dados');
-    }
-});
-
-server.put('/atualizar/atracao/:idAtracao', async (req, res) => {
-    const idAtracao = parseInt(req.params.idAtracao);
-    const { nomeAtracao, idHabitat } = req.body;
-
-    // Criar nova instância de Atracao
-    const novaAtracao = new Atracao(nomeAtracao);
-
-    try {
-        // Se idHabitat estiver presente na requisição, configurar o habitat da nova atração
-        if (idHabitat) {
-            const habitat = new Habitat(''); // Aqui você precisa criar uma instância de Habitat com os dados corretos
-            novaAtracao.setHabitatAtracao(habitat);
-        }
-
-        // Chamar método de atualização da atração
-        const result = await Atracao.atualizarAtracao(novaAtracao, idAtracao);
-
-        // Verificar resultado da atualização
-        if (result) {
-            return res.status(200).json('Atração atualizada com sucesso');
-        } else {
-            return res.status(400).json('Não foi possível atualizar a atração no banco de dados');
-        }
-    } catch (error) {
-        console.log('Erro ao atualizar atração:', error);
-        return res.status(400).json('Erro interno ao atualizar atração');
-    }
-});
-server.put('/atualizar/habitat', async (req, res) => {
-    // Desestruturando objeto recebido pelo front-end
-    const { nomeHabitat } = req.body;
-    const idHabitat = parseInt(req.query.idHabitat as string);
-
-    // Instanciando objeto Habitat
-    const novoHabitat = new Habitat(nomeHabitat);
-
-    // Chama o método para persistir o habitat no banco de dados
-    const result = await Habitat.atualizarHabitat(novoHabitat, idHabitat);
-
-    // Verifica se a query foi executada com sucesso
-    if (result) {
-        return res.status(200).json('Habitat atualizado com sucesso');
-    } else {
-        return res.status(400).json('Não foi possível atualizar o habitat no banco de dados');
-    }
-});
+server.get('/habitats', habitatController.todos);
+server.post('/novo/habitat',  habitatController.novo);
+server.delete('/remover/habitat', habitatController.remover);
+server.put('/atualizar/habitat', habitatController.atualizar);
 
 new DatabaseModel().testeConexao().then((resbd) => {
     if(resbd) {
